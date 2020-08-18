@@ -4,70 +4,60 @@ import pytesseract
 import numpy
 import mss
 import keyboard
+import sys
+import time
 
-def noop(val):
-    pass
+text_enemy_surrend = 'Enemy team agreed to a surrend with x votes for and x against.'
+text_ally_surrend = 'Xxx has started a surrender vote. Type /surrender or /nosurrender.'
 
-mon = {'top': 150, 'left': 50, 'width': 500, 'height': 500}
-
-cv2.namedWindow('control')
-cv2.createTrackbar('min H', 'control', 5, 180, noop)
-cv2.createTrackbar('max H', 'control', 35, 180, noop)
-cv2.createTrackbar('min S', 'control', 110, 255, noop)
-cv2.createTrackbar('max S', 'control', 255, 255, noop)
-cv2.createTrackbar('min V', 'control', 100, 255, noop)
-cv2.createTrackbar('max V', 'control', 255, 255, noop)
-
-img = cv2.imread('C:\\Users\\Nicolas\\Desktop\\surrend.png')
+kernel_erode_v = numpy.ones((2,1), numpy.uint8)
+kernel_erode_h = numpy.ones((1,2), numpy.uint8)
+kernel_dilate = numpy.ones((5,5), numpy.uint8)
+kernel_final = numpy.ones((2,1), numpy.uint8)
 
 sct = mss.mss()
+monitor = {'left': 10, 'top': 1062, 'width': 680, 'height': 190}
+if len(sys.argv) >= 5:
+    monitor['left'] = int(sys.argv[1])
+    monitor['top'] = int(sys.argv[2])
+    monitor['width'] = int(sys.argv[3])
+    monitor['height'] = int(sys.argv[4])
+
+print('monitor config:', monitor)
+
+frame_count = 0
+t0 = time.time()
+fps = 20
 while True:
-    #img = numpy.array(sct.grab(mon))
+    img = numpy.array(sct.grab(monitor))
 
-    min_h = cv2.getTrackbarPos('min H', 'control')
-    max_h = cv2.getTrackbarPos('max H', 'control')
-    min_s = cv2.getTrackbarPos('min S', 'control')
-    max_s = cv2.getTrackbarPos('max S', 'control')
-    min_v = cv2.getTrackbarPos('min V', 'control')
-    max_v = cv2.getTrackbarPos('max V', 'control')
-
-    kernel = numpy.ones((3,3), numpy.uint8)
-
-    mask = cv2.inRange(cv2.cvtColor(img, cv2.COLOR_BGR2HSV), (min_h, 110, 110), (max_h, max_s, max_v))
-    mask = cv2.dilate(mask, kernel, iterations=3)
+    mask = cv2.inRange(cv2.cvtColor(img, cv2.COLOR_BGR2HSV), (15, 200, 150), (25, 255, 255))
+    mask = cv2.erode(mask, kernel_erode_v, iterations=1)
+    mask = cv2.erode(mask, kernel_erode_h, iterations=1)
+    mask = cv2.dilate(mask, kernel_dilate, iterations=5)
 
     masked = cv2.bitwise_and(img, img, mask=mask)
-    
-    filtered = cv2.inRange(cv2.cvtColor(masked, cv2.COLOR_BGR2HSV), (min_h, min_s, min_v), (max_h, max_s, max_v))
-    filtered = 255-filtered
+    masked = cv2.inRange(cv2.cvtColor(masked, cv2.COLOR_BGR2HSV), (15, 110, 100), (25, 255, 255))
+    masked = 255-masked
+
+    eroded = cv2.erode(masked, kernel_final, iterations=1)
 
     cv2.imshow('raw', img)
     cv2.imshow('mask', mask)
     cv2.imshow('masked', masked)
-    cv2.imshow('filtered', filtered)
+    cv2.imshow('eroded', eroded)
     cv2.waitKey(1)
 
-    string = pytesseract.image_to_string(filtered, lang='eng')
+    string = pytesseract.image_to_string(eroded, lang='eng')
 
-    print("===================")
+    print("=== Detected:")
     print(string)
-
-    references = [
-        'Type /help for a list of commands',
-        'Type /allcommands for all possible commands.',
-        'Usage: /help [command] to get usage information on that command.'
-    ]
-
-    ok = True
-    for ref in references:
-        if ref not in string:
-            print('-------------')
-            print('Did not get:')
-            print(ref)
-            ok = False
-
-    if ok:
-        print("OK")
-
-    if keyboard.is_pressed('q'):
-        break
+    
+    frame_count += 1
+    if frame_count == fps:
+        t1 = time.time()
+        fps = fps/(t1 - t0)
+        print("FPS:", fps)
+        fps = int(fps*2 + 1)
+        frame_count = 0
+        t0 = t1
