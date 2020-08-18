@@ -34,12 +34,16 @@ kernel_dilate = numpy.ones((5, 5), numpy.uint8)
 kernel_final = numpy.ones((2, 1), numpy.uint8)
 
 sct = mss.mss()
-monitor = {'left': 10, 'top': 1062, 'width': 680, 'height': 190}
+monitor = {'left': 0, 'top': 0, 'width': 0, 'height': 0}
 if len(sys.argv) >= 5:
     monitor['left'] = int(sys.argv[1])
     monitor['top'] = int(sys.argv[2])
     monitor['width'] = int(sys.argv[3])
     monitor['height'] = int(sys.argv[4])
+else:
+    print('Usage:')
+    print(sys.argv[0], '<left> <top> <width> <height>')
+    exit()
 
 print('monitor config:', monitor)
 
@@ -58,27 +62,19 @@ while True:
     masked = cv2.inRange(cv2.cvtColor(masked, cv2.COLOR_BGR2HSV), (15, 110, 100), (25, 255, 255))
     masked = 255-masked
 
-    eroded = cv2.erode(masked, kernel_final, iterations=1)
+    filtered = cv2.erode(masked, kernel_final, iterations=1)
 
-    cv2.imshow('raw', img)
-    cv2.imshow('mask', mask)
-    cv2.imshow('masked', masked)
-    cv2.imshow('eroded', eroded)
+    cv2.imshow('preview', img)
+    #cv2.imshow('mask', mask)
+    #cv2.imshow('masked', masked)
+    cv2.imshow('filtered', filtered)
     cv2.waitKey(1)
 
-    detected_string = pytesseract.image_to_string(eroded, lang='eng')
+    detected_string = pytesseract.image_to_string(filtered, lang='eng')
 
     print("=== Detected:")
     print(detected_string)
     print("===")
-
-    detected_string2 = '''Type /help for a list of commands
-Enemy team has destroyed the first turret! (Bonus Gold: )
-DrG Minimayer has started a surrender vote. Type /surrender or
-/nosurrender,
-Your team agreed to a surrender with | votes for and 0 against.
-
-'''
 
     detected_string = detected_string.replace('\n', ' ').replace('\r', '')
 
