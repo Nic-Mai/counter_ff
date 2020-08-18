@@ -82,20 +82,15 @@ while True:
     ally_surrend_distance = find_closest_match(detected_string, text_ally_surrend)
     ally_surrend_after_distance = find_closest_match(detected_string, text_ally_surrend_after)
 
-    print('enemy_surrend_distance:', enemy_surrend_distance, 'ally_surrend_distance:', ally_surrend_distance, 'ally_surrend_after_distance:', ally_surrend_after_distance)
+    print('enemy_surrend_distance:', enemy_surrend_distance, ', ally_surrend_distance:', ally_surrend_distance, ', ally_surrend_after_distance:', ally_surrend_after_distance)
 
     if enemy_surrend_distance < enemy_surrend_max_distance and enemy_surrend_distance < ally_surrend_after_distance:
-        while True:
-            for i in range(sound_repetitions):
-                print('ENEMY SURREND')
-                playsound.playsound('annoying_alarm_clock_sound.wav')
-            exit()
+        for i in range(sound_repetitions):
+            print('ENEMY SURREND')
+            playsound.playsound('annoying_alarm_clock_sound.wav')
+        exit()
     elif ally_surrend_distance < ally_surrend_max_distance:
-        while True:
-            for i in range(sound_repetitions):
-                print('ALLY SURREND')
-                playsound.playsound('annoying_alarm_clock_sound.wav')
-            exit()
+        print('ALLY SURREND')
 
     frame_count += 1
     if frame_count == fps:
