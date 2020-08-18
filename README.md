@@ -15,7 +15,7 @@ pip install -r requirements.txt
 
 ### Run script:
 ```
-python main.py <left> <top> <width> <height>
+python main.py <left> <top> <width> <height> <auto_surrend>
 ```
 
 ### Parameters:
