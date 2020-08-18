@@ -7,13 +7,21 @@ import sys
 import time
 import Levenshtein
 import playsound
+from pynput.keyboard import Controller, Key
 
-text_enemy_surrend = 'Enemy team agreed to a surrend with x votes for and x against'
+text_enemy_surrend = 'Enemy team agreed to a surrender with x votes for and x against'
 text_ally_surrend_after = 'Your team agreed to a surrender with x votes for and x against'
 text_ally_surrend = 'has started a surrender vote. Type /surrender or /nosurrender'
 enemy_surrend_max_distance = 10
 ally_surrend_max_distance = 8
 sound_repetitions = 8
+
+
+def press_key(key):
+    kb.press(key)
+    time.sleep(0.03)
+    kb.release(key)
+    time.sleep(0.03)
 
 
 def find_closest_match(string, text):
@@ -28,24 +36,33 @@ def find_closest_match(string, text):
     return closest_distance
 
 
+kb = Controller()
+
 kernel_erode_v = numpy.ones((2, 1), numpy.uint8)
 kernel_erode_h = numpy.ones((1, 2), numpy.uint8)
 kernel_dilate = numpy.ones((5, 5), numpy.uint8)
 kernel_final = numpy.ones((2, 1), numpy.uint8)
 
+auto_surrend = False
+
 sct = mss.mss()
 monitor = {'left': 0, 'top': 0, 'width': 0, 'height': 0}
-if len(sys.argv) >= 5:
+if len(sys.argv) >= 6:
     monitor['left'] = int(sys.argv[1])
     monitor['top'] = int(sys.argv[2])
     monitor['width'] = int(sys.argv[3])
     monitor['height'] = int(sys.argv[4])
+    if sys.argv[5] == 'yes':
+        auto_surrend = True
 else:
     print('Usage:')
-    print(sys.argv[0], '<left> <top> <width> <height>')
+    print(sys.argv[0], '<left> <top> <width> <height> <auto_surrend>')
+    print('Example:')
+    print(sys.argv[0], '10 1062 680 190 yes')
     exit()
 
 print('monitor config:', monitor)
+print('auto_surrend:', auto_surrend)
 
 frame_count = 0
 t0 = time.time()
@@ -84,10 +101,17 @@ while True:
 
     print('enemy_surrend_distance:', enemy_surrend_distance, ', ally_surrend_distance:', ally_surrend_distance, ', ally_surrend_after_distance:', ally_surrend_after_distance)
 
-    if enemy_surrend_distance < enemy_surrend_max_distance and enemy_surrend_distance < ally_surrend_after_distance:
+    if enemy_surrend_distance < enemy_surrend_max_distance and enemy_surrend_distance <= (ally_surrend_after_distance-1):
         for i in range(sound_repetitions):
             print('ENEMY SURREND')
             playsound.playsound('annoying_alarm_clock_sound.wav')
+
+            if auto_surrend:
+                press_key(Key.enter)
+                press_key('/')
+                press_key('f')
+                press_key('f')
+                press_key(Key.enter)
         exit()
     elif ally_surrend_distance < ally_surrend_max_distance:
         print('ALLY SURREND')

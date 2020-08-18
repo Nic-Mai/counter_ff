@@ -4,3 +4,4 @@ pytesseract
 mss
 python-Levenshtein
 playsound
+pyinput

@@ -28,5 +28,5 @@ Preview should look like this:
 
 Example (with 1440p monitor):
 ```
-python main.py 10 1062 680 190
+python main.py 10 1062 680 190 yes
 ```
