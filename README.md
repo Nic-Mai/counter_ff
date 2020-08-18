@@ -24,7 +24,7 @@ Adjust *left*, *top*, *width* and *height* parameters to match the chat position
 
 Preview should look like this:
 
-![example](img/example.png "Examplef asdf")
+![example](img/example.png "Example")
 
 Example (with 1440p monitor):
 ```
