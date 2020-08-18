@@ -3,12 +3,28 @@ import cv2
 import pytesseract
 import numpy
 import mss
-import keyboard
 import sys
 import time
+import Levenshtein
 
-text_enemy_surrend = 'Enemy team agreed to a surrend with x votes for and x against.'
-text_ally_surrend = 'Xxx has started a surrender vote. Type /surrender or /nosurrender.'
+text_enemy_surrend = 'Enemy team agreed to a surrend with x votes for and x against'
+text_ally_surrend_after = 'Your team agreed to a surrender with x votes for and x against'
+text_ally_surrend = 'has started a surrender vote. Type /surrender or /nosurrender'
+enemy_surrend_max_distance = 10
+ally_surrend_max_distance = 8
+
+def find_closest_match(string, text):
+    closest_match = -1
+    closest_distance = -1
+    for i in range(len(string) + len(text)):
+        distance = Levenshtein.distance(string[i-len(text) if i-len(text) >= 0 else 0 : i], text)
+        if distance < closest_distance or closest_distance < 0:
+            closest_match = i
+            closest_distance = distance
+
+    print("- Closest match:")
+    print(string[closest_match-len(text) if closest_match-len(text) >= 0 else 0 : closest_match])
+    return closest_distance
 
 kernel_erode_v = numpy.ones((2,1), numpy.uint8)
 kernel_erode_h = numpy.ones((1,2), numpy.uint8)
@@ -48,10 +64,26 @@ while True:
     cv2.imshow('eroded', eroded)
     cv2.waitKey(1)
 
-    string = pytesseract.image_to_string(eroded, lang='eng')
+    detected_string = pytesseract.image_to_string(eroded, lang='eng')
 
     print("=== Detected:")
-    print(string)
+    print(detected_string)
+
+    detected_string = detected_string.replace('\n', ' ').replace('\r', '')
+
+    enemy_surrend_distance = find_closest_match(detected_string, text_enemy_surrend)
+    ally_surrend_distance = find_closest_match(detected_string, text_ally_surrend)
+    ally_surrend_after_distance = find_closest_match(detected_string, text_ally_surrend_after)
+
+    print("--------", enemy_surrend_distance, ally_surrend_distance, ally_surrend_after_distance)
+
+    if enemy_surrend_distance < enemy_surrend_max_distance and enemy_surrend_distance < ally_surrend_after_distance:
+        print("ENEMY SURREND")
+        time.sleep(2)
+    
+    if ally_surrend_distance < ally_surrend_max_distance:
+        print("ALLY SURREND")
+        time.sleep(2)
     
     frame_count += 1
     if frame_count == fps:
