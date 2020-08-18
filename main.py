@@ -72,9 +72,9 @@ while True:
 
     detected_string = pytesseract.image_to_string(filtered, lang='eng')
 
-    print("=== Detected:")
+    print('=== Detected:')
     print(detected_string)
-    print("===")
+    print('===')
 
     detected_string = detected_string.replace('\n', ' ').replace('\r', '')
 

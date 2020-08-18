@@ -20,7 +20,9 @@ python main.py <left> <top> <width> <height>
 
 ### Parameters:
 
-Adjust left, top, width and height parameters to match chat position (type "/allcommands" to fill the chat with yellow text), preview should look like this:
+Adjust *left*, *top*, *width* and *height* parameters to match the chat position (type "/allcommands" to fill the chat with yellow text)
+
+Preview should look like this:
 
 ![example](img/example.png "Examplef asdf")
 
