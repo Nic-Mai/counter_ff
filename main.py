@@ -14,7 +14,7 @@ text_ally_surrend_after = 'Your team agreed to a surrender with x votes for and 
 text_ally_surrend = 'has started a surrender vote. Type /surrender or /nosurrender'
 enemy_surrend_max_distance = 10
 ally_surrend_max_distance = 8
-sound_repetitions = 8
+alarm_repetitions = 4
 
 
 def press_key(key):
@@ -102,7 +102,7 @@ while True:
     print('enemy_surrend_distance:', enemy_surrend_distance, ', ally_surrend_distance:', ally_surrend_distance, ', ally_surrend_after_distance:', ally_surrend_after_distance)
 
     if enemy_surrend_distance < enemy_surrend_max_distance and enemy_surrend_distance <= (ally_surrend_after_distance-1):
-        for i in range(sound_repetitions):
+        for i in range(alarm_repetitions):
             print('ENEMY SURREND')
             playsound.playsound('annoying_alarm_clock_sound.wav')
 
