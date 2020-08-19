@@ -8,6 +8,8 @@ import time
 import Levenshtein
 import playsound
 from pynput.keyboard import Controller, Key
+import requests
+import threading
 
 text_enemy_surrend = 'Enemy team agreed to a surrender with x votes for and x against'
 text_ally_surrend_after = 'Your team agreed to a surrender with x votes for and x against'
@@ -44,25 +46,37 @@ kernel_dilate = numpy.ones((5, 5), numpy.uint8)
 kernel_final = numpy.ones((2, 1), numpy.uint8)
 
 auto_surrend = False
+bot_url = None
+bot_token = None
 
 sct = mss.mss()
 monitor = {'left': 0, 'top': 0, 'width': 0, 'height': 0}
-if len(sys.argv) >= 6:
+if len(sys.argv) >= 6 and sys.argv[5] in ['yes', 'no']:
     monitor['left'] = int(sys.argv[1])
     monitor['top'] = int(sys.argv[2])
     monitor['width'] = int(sys.argv[3])
     monitor['height'] = int(sys.argv[4])
     if sys.argv[5] == 'yes':
         auto_surrend = True
+    if len(sys.argv) >= 8:
+        bot_url = sys.argv[6]
+        bot_token = sys.argv[7]
 else:
     print('Usage:')
-    print(sys.argv[0], '<left> <top> <width> <height> <auto_surrend>')
+    print(sys.argv[0], '<left> <top> <width> <height> <auto_surrend (yes/no)> [<bot_url> <bot_token>]')
     print('Example:')
     print(sys.argv[0], '10 1062 680 190 yes')
     exit()
 
 print('monitor config:', monitor)
 print('auto_surrend:', auto_surrend)
+print('bot_url:', bot_url)
+print('bot_token:', bot_token)
+
+
+def send_request():
+    res = requests.post(bot_url, json={'token': bot_token}, timeout=10)
+
 
 frame_count = 0
 t0 = time.time()
@@ -102,6 +116,10 @@ while True:
     print('enemy_surrend_distance:', enemy_surrend_distance, ', ally_surrend_distance:', ally_surrend_distance, ', ally_surrend_after_distance:', ally_surrend_after_distance)
 
     if enemy_surrend_distance < enemy_surrend_max_distance and enemy_surrend_distance <= (ally_surrend_after_distance-1):
+
+        if bot_url is not None and bot_token is not None:
+            threading.Thread(target=send_request).start()
+
         for i in range(alarm_repetitions):
             print('ENEMY SURREND')
             playsound.playsound('annoying_alarm_clock_sound.wav')
