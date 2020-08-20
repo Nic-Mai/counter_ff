@@ -2,6 +2,6 @@ numpy
 opencv-python
 pytesseract
 mss
-python-Levenshtein
 playsound
 pynput
+requests
