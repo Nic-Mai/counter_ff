@@ -9,6 +9,7 @@ import playsound
 from pynput.keyboard import Controller, Key
 import requests
 import threading
+import Levenshtein
 
 text_enemy_surrend = 'Enemy team agreed to a surrender with x votes for and x against'
 text_ally_surrend_after = 'Your team agreed to a surrender with x votes for and x against'
@@ -81,38 +82,11 @@ def alarm(message):
             press_key(Key.enter)
 
 
-def levenshtein_distance(s1, s2):
-    n = len(s2)
-    m = len(s1)
-    v0 = []
-    v1 = [0] * (n+1)
-
-    for i in range(n+1):
-        v0.append(i)
-
-    for i in range(m):
-        v1[0] = i+1
-
-        for j in range(n):
-            deletion_cost = v0[j+1] + 1
-            insertion_cost = v1[j] + 1
-            substitution_cost = v0[j]
-            if not s1[i] == s2[j]:
-                substitution_cost += 1
-            v1[j+1] = min(deletion_cost, insertion_cost, substitution_cost)
-
-        tmp = v0
-        v0 = v1
-        v1 = tmp
-
-    return v0[n]
-
-
 def find_closest_match(string, text):
     closest_match = -1
     closest_distance = -1
     for i in range(len(string) + len(text)):
-        distance = levenshtein_distance(string[i-len(text) if i-len(text) >= 0 else 0: i], text)
+        distance = Levenshtein.distance(string[i-len(text) if i-len(text) >= 0 else 0: i], text)
         if distance < closest_distance or closest_distance < 0:
             closest_match = i
             closest_distance = distance
